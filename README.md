@@ -1,6 +1,8 @@
 # RIFE ncnn Vulkan Python
 
-![CI](https://github.com/ArchieMeng/rife-ncnn-vulkan-python/workflows/CI/badge.svg)
+Information about fork: This fork adds Rife4 and removes PIL. It uses numpy arrays instead.
+
+![CI](https://github.com/styler00dollar/rife-ncnn-vulkan-python/workflows/CI/badge.svg)
 
 ## Introduction
 [rife-ncnn-vulkan](https://github.com/nihui/rife-ncnn-vulkan) is nihui's ncnn implementation of Real-Time Intermediate Flow Estimation for Video Frame Interpolation.
