@@ -17,6 +17,7 @@ import sys
 
 # third-party imports
 from PIL import Image
+import numpy as np
 
 # local imports
 if __package__ is None:
@@ -29,7 +30,7 @@ class Rife:
     def __init__(
         self,
         gpuid: int = -1,
-        model: str = "rife-HD",
+        model: str = "rife-v4",
         scale: int = 2,
         tta_mode: bool = False,
         uhd_mode: bool = False,
@@ -43,10 +44,11 @@ class Rife:
 
         # determine if rife-v2 is used
         rife_v2 = ("rife-v2" in model) or ("rife-v3" in model)
+        rife_v4 = ("rife-v4" in model)
 
         # create raw RIFE wrapper object
         self._rife_object = wrapped.RifeWrapped(
-            gpuid, tta_mode, uhd_mode, num_threads, rife_v2
+            gpuid, tta_mode, uhd_mode, num_threads, rife_v2, rife_v4
         )
         self._load(model)
 
@@ -75,28 +77,29 @@ class Rife:
             raise FileNotFoundError(f"{model_dir} not found")
 
     def process(self, image0: Image, image1: Image) -> Image:
-        image0_bytes = bytearray(image0.tobytes())
-        image1_bytes = bytearray(image1.tobytes())
-        channels = int(len(image0_bytes) / (image0.width * image0.height))
+        w = image0.shape[1]
+        h = image0.shape[0]
+        image0_bytes = bytearray(np.array(image0).tobytes(order='C'))
+        image1_bytes = bytearray(np.array(image1).tobytes(order='C'))
+        channels = int(len(image0_bytes) / (w * h))
         output_bytes = bytearray(len(image0_bytes))
 
         # convert image bytes into ncnn::Mat Image
         raw_in_image0 = wrapped.Image(
-            image0_bytes, image0.width, image0.height, channels
+            image0_bytes, w, h, channels
         )
         raw_in_image1 = wrapped.Image(
-            image1_bytes, image1.width, image1.height, channels
+            image1_bytes, w, h, channels
         )
         raw_out_image = wrapped.Image(
-            output_bytes, image0.width, image0.height, channels
+            output_bytes, w, h, channels
         )
 
         self._rife_object.process(raw_in_image0, raw_in_image1, 0.5, raw_out_image)
-
-        return Image.frombytes(
-            image0.mode, (image0.width, image0.height), bytes(output_bytes)
-        )
-
-
+        
+        out_numpy = np.frombuffer(bytes(output_bytes), dtype=np.uint8)
+        out_numpy = np.reshape(out_numpy, (h, w, 3))
+        return out_numpy
+        
 class RIFE(Rife):
     ...

@@ -66,13 +66,13 @@ https://arxiv.org/abs/2011.06294
 
 ```python
 from rife_ncnn_vulkan_python import Rife
-from PIL import Image
+import cv2
 
-with Image.open("input0.png") as image0:
-    with Image.open("input1.png") as image1:
-      rife = Rife(gpuid=0)
-      image = rife.process(image0, image1)
-      image.save("output.png")
+image0 = cv2.imread("frame1.jpg")
+image1 = cv2.imread("frame3.jpg")
+rife = Rife(gpuid=0, model="rife-v4", tta_mode=False, num_threads=4)
+output = rife.process(image0, image1)
+cv2.imwrite("output.png", output)
 ```
 
 If you encounter a crash or error, try upgrading your GPU driver:
@@ -94,6 +94,7 @@ If you encounter a crash or error, try upgrading your GPU driver:
 | rife-v2.4 | 2.4 |
 | rife-v3.0 | 3.0 |
 | rife-v3.1 | 3.1 |
+| rife-v4 | 4 |
 
 ## Original RIFE Project
 
